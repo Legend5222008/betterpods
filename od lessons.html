@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Firebase File Uploads</title>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap">
+   <style>
+      body {
+         font-family: 'Quicksand', sans-serif;
+         background-color: #f5f5f5;
+         margin: 0;
+         padding: 0;
+         color: #333;
+      }
+      #uploadSection {
+         background-color: #1a237e;
+         color: #fff;
+         padding: 20px;
+         height: 200px;
+         text-align: center;
+         border-radius: 5px;
+         height: 320px;
+         margin-bottom: 20px;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+      }
+      #fileInput {
+         display: none;
+      }
+      #chooseFileBtn {
+         background-color: #fff;
+         color: #1a237e;
+         border: none;
+         padding: 10px 20px;
+         cursor: pointer;
+         font-size: 16px;
+         border-radius: 5px;
+         transition: background-color 0.3s, color 0.3s;
+      }
+      #chooseFileBtn:hover {
+         background-color: lightgrey;
+         color: #fff;
+      }
+      #mediaContainer {
+         display: flex;
+         flex-wrap: wrap;
+         overflow: scroll;
+         margin-top: 20px;
+         justify-content: center;
+      }
+      .media-item {
+         margin: 10px;
+         text-align: center;
+         background-color: #fff;
+         padding: 20px;
+         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+         border-radius: 8px;
+         width: 200px;
+         transition: transform 0.3s;
+         position: relative;
+      }
+      .media-item img, .media-item video {
+         max-width: 100%;
+         max-height: 150px;
+         margin-bottom: 10px;
+         border-radius: 5px;
+         overflow: hidden;
+         cursor: pointer;
+      }
+      .media-item video {
+         cursor: default;
+      }
+      .expand-btn {
+         position: absolute;
+         top: 50%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         background-color: #3498db;
+         color: #fff;
+         border: none;
+         padding: 5px 10px;
+         cursor: pointer;
+         border-radius: 5px;
+         transition: background-color 0.3s, color 0.3s;
+      }
+      .expand-btn:hover {
+         background-color: #2980b9;
+      }
+      .deleteBtn {
+         background-color: #e74c3c;
+         color: #fff;
+         border: none;
+         padding: 5px 10px;
+         cursor: pointer;
+         border-radius: 5px;
+         transition: background-color 0.3s, color 0.3s;
+         margin-top: 10px;
+         width: 100%;
+      }
+      p {
+         font-weight: bold;
+         font-size: 18px;
+      }
+      .deleteBtn:hover {
+         background-color: #c0392b;
+      }
+      h2{
+        font-size: 20px;
+        margin-top: 30px;
+      }
+      #Total{
+        display: none;
+      }
+      span{
+        font-size: 30px;
+      }
+      #Login{
+        width: 100%;
+        height: 100%;
+        background: #1a237e;
+        position: absolute;
+      }
+      #borders {
+       position: absolute;
+       top: 50%;
+       left: 50%;
+       transform: translate(-50%, -50%);
+       height: 260px;
+       border: white 2px solid;
+       width: 240px;
+      }
+      input{
+        height: 30px;
+        width: 205px;
+        background: transparent;
+        margin-left: 14px;
+        margin-top: 20px;
+        color: white;
+        outline: none;
+        border: white solid 1px;
+        padding: 6px;
+        border: none;
+        border-bottom: 1px white solid; 
+      }
+      button{
+        height: 35px;
+        width: 100px;
+        margin-left: 13px;
+        margin-top: 15px;
+      }
+      h2{
+        text-align: center;
+      }
+   </style>
+</head>
+<body>
+  <div id="Login">
+    <div id="borders">
+      <h2>ODTech Login</h2>
+    <input type="text" id="pswd" placeholder="Password">
+    <input type="number" id="gotp" placeholder="G.O.T.P">
+    <button id="LogTu" id="pin" onclick="validate()">Tutors</button>
+    <button id="LogSt" onclick="checkAccess()">Student</button>
+    </div>
+  </div>
+  <div id="Total">
+   <div id="uploadSection">
+      <h2><span>ODTech</span> <br><br> Lesson Upload Section For All Courses Do Well To Attend</h2>
+      <p> ODTech Your Gateway to Technological Excellence</p>
+      <label for="fileInput" id="chooseFileBtn">Choose File</label>
+      <input type="file" id="fileInput" accept="image/*, video/*, audio/*" onchange="uploadFile()" />
+   </div>
+   <div id="mediaContainer"></div>
+  </div>
+   <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-app.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-storage.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-database.js"></script>
+   <script>
+      // Paste your Firebase configuration code here
+      const firebaseConfig = {
+         apiKey: "AIzaSyCmafR5W-AGia4Y2SmawF0ScRV37iorQYI",
+         authDomain: "odtech-f1007.firebaseapp.com",
+         databaseURL: "https://odtech-f1007-default-rtdb.firebaseio.com",
+         projectId: "odtech-f1007",
+         storageBucket: "odtech-f1007.appspot.com",
+         messagingSenderId: "855563358319",
+         appId: "1:855563358319:web:79dc781aeec65f58d9bd9a"
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      // Initialize the database
+      const database = firebase.database();
+
+      // Fetch existing files on page load
+      window.onload = function() {
+         fetchFiles();
+      };
+
+      function fetchFiles() {
+         const mediaContainer = document.getElementById('mediaContainer');
+         const mediaRef = database.ref('media');
+
+         mediaRef.once('value').then(snapshot => {
+            snapshot.forEach(childSnapshot => {
+               const data = childSnapshot.val();
+               if (data.type === 'image' || data.type === 'video' || data.type === 'audio') {
+                  createMediaElement(data.url, data.type, childSnapshot.key);
+               }
+            });
+         });
+      }
+
+      function createMediaElement(url, type, key) {
+         const mediaContainer = document.getElementById('mediaContainer');
+         const mediaItem = document.createElement('div');
+         mediaItem.className = 'media-item';
+         const mediaElement = document.createElement(type === 'image' ? 'img' : type === 'video' ? 'video' : 'audio');
+         mediaElement.src = url;
+         mediaElement.controls = true;
+         if (type === 'video') {
+            mediaElement.setAttribute('controlsList', 'nodownload'); // Prevent download button for video
+         }
+         const expandBtn = document.createElement('button');
+         expandBtn.className = 'expand-btn';
+         expandBtn.innerText = 'Expand';
+         expandBtn.onclick = function() {
+            window.open(url);
+         };
+         const deleteBtn = document.createElement('button');
+         deleteBtn.className = 'deleteBtn';
+         deleteBtn.innerText = 'Delete';
+         deleteBtn.onclick = function() {
+            deleteFile(key);
+            mediaContainer.removeChild(mediaItem);
+         };
+            
+         mediaItem.appendChild(mediaElement);
+         mediaItem.appendChild(expandBtn);
+         mediaItem.appendChild(deleteBtn);
+         mediaContainer.appendChild(mediaItem);
+      }
+
+      function deleteFile(key) {
+         const mediaRef = database.ref('media/' + key);
+         mediaRef.remove();
+         // Add code to// Use firebase.storage().refFromURL(url).delete()
+         // Handle any errors appropriately
+         }
+         
+         function uploadFile() {
+           const fileInput = document.getElementById('fileInput');
+           const file = fileInput.files[0];
+           const fileType = getFileType(file.type);
+           if (fileType) {
+             const storageRef = firebase.storage().ref('uploads/' + file.name);
+             const databaseRef = database.ref('media');
+         
+             storageRef.put(file).then(snapshot => {
+               return snapshot.ref.getDownloadURL();
+             }).then(url => {
+               const data = {
+                 url: url,
+                 type: fileType
+               };
+               const mediaRef = databaseRef.push(data);
+               createMediaElement(url, fileType, mediaRef.key);
+               alert('File uploaded successfully');
+             }).catch(error => {
+               console.error('Error uploading file:', error);
+               alert('Error uploading file. Check console for details.');
+             });
+           } else {
+             alert('Unsupported file type. Please upload an image, video, or audio.');
+           }
+         }
+         
+         function getFileType(mimeType) {
+           if (mimeType.startsWith('image')) {
+             return 'image';
+           } else if (mimeType.startsWith('video')) {
+             return 'video';
+           } else if (mimeType.startsWith('audio')) {
+             return 'audio';
+           } else {
+             return null; // Unsupported file type
+           }
+         }
+         function validate(){
+          var gotp = document.getElementById('gotp');
+          var pswd = document.getElementById('pswd');
+          var success = document.getElementById('Total');
+          var failure = document.getElementById('Login');
+          
+          if (gotp.value==5222008 && pswd.value=='ODTech2024') {
+            success.style.display="block";
+            failure.style.display="none";
+            alert("successfully Logged in");
+          }else{
+            success.style.display="none";
+            alert("wrong credentials");
+          }
+        }
+        function skip(){
+          var success = document.getElementById('success');
+          var failure = document.getElementById('failure');
+          var uploadBtn = document.getElementById('uploadBtn');
+          uploadBtn.disabled = true;
+          uploadBtn.style.background="lightblue";
+          uploadBtn.textContent="disabled";
+          success.style.display = "block";
+          failure.style.display = "none";
+          alert("upload button disabled");
+        }
+        
+function checkAccess() {
+  var allowedNames = ["#OD00", "#OD01", "#OD02", "#OD03", "#OD04", "#OD05", "#OD06", "#OD07", "#OD08", "#OD09", "#OD10", "#OD11", "#OD12", "#OD13", "#OD14", "#OD15", "#OD16", "#OD17", "#OD18", "#OD19", "#OD20"];
+  var enteredName;
+  var storedName = localStorage.getItem('enteredName');
+  var accessGranted = sessionStorage.getItem('accessGranted');
+  var timestamp = localStorage.getItem('timestamp');
+
+  if (timestamp && isExpired(timestamp)) {
+    // If 6 hours have passed, reset access
+    sessionStorage.removeItem('accessGranted');
+  }
+
+  if (accessGranted === 'true') {
+    alert('Access has already been granted. You can use the code.');
+    return;
+  }
+
+  do {
+    enteredName = prompt("Enter your name:", storedName);
+
+    if (enteredName === null) {
+      // User clicked "Cancel" button
+      return;
+    } else if (enteredName.trim() === "") {
+      alert("Please enter a valid name to access the page.");
+    } else if (allowedNames.includes(enteredName) && !accessGranted) {
+      if (isCodeAvailable(enteredName)) {
+        alert("Access granted! You can now use the code.");
+        sessionStorage.setItem('accessGranted', 'true');
+        localStorage.setItem('enteredName', enteredName);
+        localStorage.setItem('timestamp', new Date().getTime()); // Store current timestamp
+        var success = document.getElementById('Total');
+        var failure = document.getElementById('Login');
+        var uploadBtn = document.getElementById('chooseFileBtn');
+        uploadBtn.disabled = true;
+        uploadBtn.style.display = "none";
+        uploadBtn.textContent = "disabled";
+        success.style.display = "block";
+        failure.style.display = "none";
+
+        // Remove the successfully used name from the array
+        allowedNames = allowedNames.filter(name => name !== enteredName);
+        return; // Exit the function after successful access
+      } else {
+        alert("This code has already been used. Please enter a different code.");
+      }
+    } else if (allowedNames.includes(enteredName) && accessGranted) {
+      alert("Access has already been granted for this code.");
+    } else {
+      alert("🥶wrong details ❌");
+    }
+  } while (true); // Infinite loop until valid input or cancel
+
+  function isCodeAvailable(code) {
+    // Check if the code is available (not already used)
+    return allowedNames.includes(code);
+  }
+
+  function isExpired(timestamp) {
+    // Check if 6 hours have passed since the stored timestamp
+    const sixHoursInMillis = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+    const currentTime = new Date().getTime();
+    return currentTime - timestamp > sixHoursInMillis;
+  }
+}
+         </script> 
+         </body>
+         </html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your Chat App</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: #1a237e; /* Blue color */
+            color: #fff;
+        }
+
+        #userProfileImage {
+            height: 65px;
+            width: 65px;
+            background: whitesmoke;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        #userName {
+            color: #fff;
+            font-size: 0px;
+            position: absolute;
+            margin-left: 70px;
+        }
+
+        #msgContainer {
+            background: #fff;
+            height: calc(100% - 80px); /* Adjusted height, no margin from the bottom */
+            overflow: scroll;
+            padding: 10px;
+            margin: 0; /* No margin */
+        }
+
+        #sendBlock {
+            display: flex;
+            align-items: center;
+            background: #1a237e; /* Blue color */
+            padding: 10px;
+        }
+
+        #msgText {
+            height: 35px;
+            outline: none;
+            margin-left: 20px;
+            width: calc(100% - 120px);
+            z-index: 1;
+            padding: 5px;
+            padding-left: 15px;
+            padding-top: 7px;
+            border: none;
+            position: relative;
+            transition-duration: 1s;
+            border-radius: 10px;
+        }
+
+        #sBtn {
+            background: white;
+            height: 47px;
+            width: 95px;
+            border: none;
+            color: #1a237e;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1;
+            outline: none;
+            margin-left: 10px;
+            border-radius: 10px;
+        }
+
+        #navBlock {
+            background: transparent;
+            width: 95px;
+            height: 70px;
+            transition-duration: 4s;
+            overflow: hidden;
+            align-self: flex-end; /* Positioned at the top right */
+            margin-left: -10px;
+            position: absolute;
+        }
+
+        #navBlock:hover {
+            height: 340px;
+        }
+
+        h2 {
+            background: transparent;
+            height: 38px;
+            width: 80px;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1;
+            outline: none;
+            text-align: center;
+            font-size: 20px;
+            margin-left: 8px;
+            padding-top: 10px;
+            transition-duration: 2s;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        h2:hover {
+            font-size: 30px;
+        }
+
+        .message {
+            padding: 5px;
+            margin: 5px;
+            margin-top: 20px;
+            border-radius: 10px;
+            display: block;
+            clear: both;
+            max-width: 150px;
+            max-height: 400px;
+            font-weight: bold;
+            overflow: scroll;
+        }
+
+        .own-message {
+            text-align: left;
+            background-color: #1a237e;
+            color: #fff;
+            margin-top: 20px;
+            margin-left: 158px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .other-message {
+            text-align: left;
+            background-color: lightgrey;
+            color: #000;
+            margin-left: 18px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        #imageFileInput {
+            background: lightgrey;
+            height: 38px;
+            width: 80px;
+            border: none;
+            color: lightgrey;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1;
+            outline: none;
+            margin-left: 8px;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        #logOut {
+            background: #1a237e;
+            height: 38px;
+            width: 80px;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1;
+            outline: none;
+            margin-left: 8px;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="header">
+            <img src="" id="userProfileImage">
+            <h1 id="userName">Your username</h1>
+        </div>
+        <div id="msgContainer"></div>
+        <form id="sendBlock">
+            <textarea type="text" onblur="" cols="" rows="" id="msgText"></textarea>
+            <input type="button" id="sBtn" value="Submit">
+        </form>
+        <div id="navBlock">
+            <h2>🖋️</h2>
+            <input type="file" id="imageFileInput"><br>
+            <button id="logOut">Log Out</button>
+        </div>
+        <audio src="https://drive.google.com/file/d/1C_6PGGvuHbIKNY6c4r3fMTZwH0yfDwgH/view?usp=drivesdk" id="sendSound">sendsnd</audio>
+        <audio src="https://drive.google.com/file/d/1Ce1adgFqqqfMvRNo2LbZ91qMAnkjOq6_/view?usp=drivesdk" id="receiveSound"> recsnd</audio>
+    </div>
+</body>
+<script type="module">
+          // Import the functions you need from the SDKs you need
+          import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+  import { getDatabase, ref, set, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+  
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmafR5W-AGia4Y2SmawF0ScRV37iorQYI",
+    authDomain: "odtech-f1007.firebaseapp.com",
+    databaseURL: "https://odtech-f1007-default-rtdb.firebaseio.com",
+    projectId: "odtech-f1007",
+    storageBucket: "odtech-f1007.appspot.com",
+    messagingSenderId: "855563358319",
+    appId: "1:855563358319:web:79dc781aeec65f58d9bd9a"
+  };
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+  
+  let username = localStorage.getItem('username');
+  while (!username) {
+    username = prompt("Enter your Username");
+  
+    if (username) {
+      localStorage.setItem('username', username);
+    }
+  }
+  var date = new Date();
+  var sBtn = document.getElementById('sBtn');
+  var message = document.getElementById('msgText');
+  const msgContainer = document.getElementById('msgContainer');
+  const chatRef = ref(database, 'messages');
+  //send message
+  sBtn.addEventListener('click', () => {
+          const messageText = message.value.trim();
+          if (messageText) {
+            // Get the current timestamp
+            const timestamp = new Date().toLocaleTimeString();
+        
+            // Push the message to Firebase
+            push(chatRef, {
+              message: messageText,
+              timestamp: timestamp,
+              sender: username // Include sender's name
+            });
+            sendSound.play();
+            receiveSound.pause();
+            // Clear the input field
+            message.value = '';
+          }
+        });
+        
+        //receiving messages
+        onChildAdded(chatRef, (snapshot) => {
+          const message = snapshot.val();
+          const messageElement = document.createElement('div');
+          messageElement.className = `message ${message.sender === username? 'own-message' : 'other-message'} data-message-id="${snapshot.key}"`;
+          messageElement.innerText = `${message.sender}: ${message.message}
+            ${message.timestamp}`;
+         msgContainer.appendChild(messageElement);
+        
+          // Scroll to the bottom to show the latest message
+          msgContainer.scrollTop = msgContainer.scrollHeight;
+          receiveSound.play();
+          sendSound.pause();
+        
+        });
+        
+        function headerName(){
+          var userName = document.getElementById('userName');
+          userName.textContent = username + " " + "ODchat";
+        }
+        headerName();
+        
+        const imageFile = document.getElementById('imageFile');
+        const profileImage = document.getElementById('profileImage');
+        
+        imageFileInput.addEventListener('change', (event) => {
+const selectedFile = event.target.files[0];
+if (selectedFile) {
+const reader = new FileReader();
+reader.onload = (e) => {
+const username = localStorage.getItem('username');
+if (username) {
+localStorage.setItem(username, e.target.result);
+userProfileImage.src = e.target.result;
+}
+};
+
+reader.readAsDataURL(selectedFile);
+}
+});
+var usernames = localStorage.getItem('username');
+
+// Check for the user image in local storage
+const userImage = localStorage.getItem(username);
+if (userImage) {
+  userProfileImage.src = userImage;
+}
+
+
+  const logOutButton = document.getElementById('logOut');
+  logOutButton.addEventListener('click', () => {
+    // Clear the entire session storage
+    localStorage.removeItem("username");
+  
+    // Show a prompt after clearing local storage
+    var alert = document.createElement("div");
+    alert.className="alertBox";
+    location.reload(); // Reload the page if you want to reset the UI
+  });
+</script>
+</script>
+</html>

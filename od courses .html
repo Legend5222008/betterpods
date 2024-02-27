@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #1a237e; /* Deep Blue */
+            color: #fff;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        p {
+            font-size: 1.2em;
+            color: #eceff1;
+            margin-top: 10px;
+        }
+
+        /* Styles for the learning page */
+
+        .learn-page {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .course-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .course {
+            max-width: 300px;
+            margin: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .course:hover{
+          border: 2px solid #1a237e;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #1a237e; /* Deep Blue */
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #1a237e; /* Deep Blue */
+        }
+
+        h3 {
+            color: #1a237e; /* Deep Blue */
+        }
+
+        /* Add additional styling as needed */
+    </style>
+    <title>OD Tech</title>
+</head>
+<body>
+    <!-- Learning Page -->
+    <section class="learn-page">
+        <h2>Explore Our Courses</h2>
+        <div class="course-container">
+            <div onclick="redLessons()" class="course">
+                <div class="upload-icon">&#8681;</div>
+                <h3>HTML Fundamentals</h3>
+                <p>Master the basics of HTML for web development. Lectures are being uploaded regularly.</p>
+            </div>
+            <div onclick="redLessons()" class="course">
+                <div class="upload-icon">&#8681;</div>
+                <h3>CSS Styling Techniques</h3>
+                <p>Learn advanced CSS styling for modern web design. Lectures are being uploaded regularly.</p>
+            </div>
+            <div onclick="redLessons()" class="course">
+                <div class="upload-icon">&#8681;</div>
+                <h3>JavaScript Essentials</h3>
+                <p>Discover the power of JavaScript for dynamic web applications. Lectures are being uploaded regularly.</p>
+            </div>
+            <!-- Add more courses as needed -->
+        </div>
+    </section>
+
+    <!-- You can add the JavaScript directly here if needed -->
+</body>
+
+<script>
+  function redLessons() {
+    window.location.href = 'od lessons.html'
+  }
+</script>
+</html>
